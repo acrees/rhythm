@@ -1,0 +1,22 @@
+{
+  "name": "rhythm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acrees/rhythm.git"
+  },
+  "author": "Alexander C Rees",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/acrees/rhythm/issues"
+  },
+  "homepage": "https://github.com/acrees/rhythm#readme",
+  "devDependencies": {
+    "typescript": "^2.8.3"
+  }
+}
