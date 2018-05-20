@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bundle": "webpack",
+    "type-check": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,18 @@
   },
   "homepage": "https://github.com/acrees/rhythm#readme",
   "devDependencies": {
-    "typescript": "^2.8.3"
+    "@babel/cli": "^7.0.0-beta.47",
+    "@babel/core": "^7.0.0-beta.47",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.47",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.47",
+    "@babel/preset-env": "^7.0.0-beta.47",
+    "@babel/preset-typescript": "^7.0.0-beta.47",
+    "awesome-typescript-loader": "^5.0.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "testdouble": "^3.8.1",
+    "typescript": "^2.8.3",
+    "webpack": "^4.8.3",
+    "webpack-cli": "^2.1.3"
   }
 }
