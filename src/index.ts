@@ -7,7 +7,7 @@ function createShader(gl, type, source) {
   if (success) {
     return shader;
   }
- 
+
   console.log(gl.getShaderInfoLog(shader));
   gl.deleteShader(shader);
 }
@@ -22,7 +22,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
   if (success) {
     return program;
   }
- 
+
   console.log(gl.getProgramInfoLog(program));
   gl.deleteProgram(program);
 }
@@ -64,10 +64,10 @@ function drawTargets(gl, colorUniformLocation, translationUniformLocation, posit
 }
 
 function drawNotes(gl, colorUniformLocation, translationUniformLocation, positionAttributeLocation, positionBuffer, notePositions, yDistancePerSecond, elapsedTime) {
-  for (note of notePositions) {
+  for (var note of notePositions) {
     gl.uniform4f(colorUniformLocation, 0, 0, 255, 1);
 
-    y = note.y - (elapsedTime / 1000 * yDistancePerSecond);
+    var y = note.y - (elapsedTime / 1000 * yDistancePerSecond);
     gl.uniform2f(translationUniformLocation, note.x, y);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -107,7 +107,7 @@ function scoreHit(maxScorePerHit, tolerances, note, elapsedTime) {
   if (diff < tolerances.great) return { hit: 'great', score: maxScorePerHit * 0.75 };
   if (diff < tolerances.good) return { hit: 'good', score: maxScorePerHit * 0.45 };
   if (diff < tolerances.bad) return { hit: 'bad', score: 0 };
- 
+
   return { hit: 'none', score: 0 };
 }
 
@@ -129,7 +129,7 @@ function checkForMissedNotes(notes, tolerances, elapsedTime) {
   return newlyMissedNotes.length;
 }
 
-function main() {
+(<any>window).main = function main() {
   const maxScorePerHit = 100; // score per hit, for perfect hits, less for being a little off
   const targetY = 0.25; // offset of targets from bottom of canvas
 
@@ -143,7 +143,7 @@ function main() {
     good: 300,
     bad: 500
   }
-  
+
   const notes = [
     { column: 0, ms: 4000 },
     { column: 1, ms: 5000 },
@@ -156,7 +156,7 @@ function main() {
     { column: 0, ms: 14000 }
   ];
 
-  const canvas = document.querySelector("#gl-main");
+  const canvas:any = document.querySelector("#gl-main");
   const gl = canvas.getContext("webgl");
 
   if (!gl) {
@@ -176,9 +176,9 @@ function main() {
   hitElement.appendChild(hitNode);
   comboElement.appendChild(comboNode);
 
-  var vertexShaderSource = document.getElementById("vertex").text;
-  var fragmentShaderSource = document.getElementById("fragment").text;
-   
+  var vertexShaderSource = (<HTMLScriptElement>document.getElementById("vertex")).text;
+  var fragmentShaderSource = (<HTMLScriptElement>document.getElementById("fragment")).text;
+
   var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
   var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
@@ -210,9 +210,9 @@ function main() {
       combo = 0;
     }
 
-    scoreNode.nodeValue = score;
+    scoreNode.nodeValue = score.toString();
     hitNode.nodeValue = result.hit;
-    
+
     if (combo === 0) {
       comboNode.nodeValue = "";
     } else {
@@ -247,7 +247,7 @@ function main() {
   var elapsed = 0;
 
   function tick(time) {
-    elapsed = time - start; 
+    elapsed = time - start;
 
     var hasMissed = checkForMissedNotes(notes, tolerances, elapsed);
     if (hasMissed) {
