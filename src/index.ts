@@ -1,92 +1,5 @@
-function createShader(gl, type, source) {
-  var shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
+import Renderer from './renderer';
 
-  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-  if (success) {
-    return shader;
-  }
-
-  console.log(gl.getShaderInfoLog(shader));
-  gl.deleteShader(shader);
-}
-
-function createProgram(gl, vertexShader, fragmentShader) {
-  var program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-
-  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-  if (success) {
-    return program;
-  }
-
-  console.log(gl.getProgramInfoLog(program));
-  gl.deleteProgram(program);
-}
-
-function bufferSquare(gl, len) {
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    0, 0,
-    len, 0,
-    len, len,
-    0, 0,
-    0, len,
-    len, len
-  ]), gl.STATIC_DRAW);
-}
-
-function drawTargets(gl, colorUniformLocation, translationUniformLocation, positionAttributeLocation, positionBuffer, targetBottomOffsetY) {
-  var targetY = targetBottomOffsetY - 1; // bottom of clipspace is -1
-
-  for (var i = 0; i < 4; i++) {
-    gl.uniform4f(colorUniformLocation, 255, 255, 255, 0.25);
-    gl.uniform2f(translationUniformLocation, -0.85 + (i * 0.5), targetY);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-    bufferSquare(gl, 0.25);
-
-    var size = 2;          // 2 components per iteration
-    var type = gl.FLOAT;   // the data is 32bit floats
-    var normalize = false; // don't normalize the data
-    var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-    var offset = 0;        // start at the beginning of the buffer
-    gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
-
-    var primitiveType = gl.TRIANGLES;
-    var offset = 0;
-    var count = 6;
-    gl.drawArrays(primitiveType, offset, count);
-  }
-}
-
-function drawNotes(gl, colorUniformLocation, translationUniformLocation, positionAttributeLocation, positionBuffer, notePositions, yDistancePerSecond, elapsedTime) {
-  for (var note of notePositions) {
-    gl.uniform4f(colorUniformLocation, 0, 0, 255, 1);
-
-    var y = note.y - (elapsedTime / 1000 * yDistancePerSecond);
-    gl.uniform2f(translationUniformLocation, note.x, y);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-    bufferSquare(gl, 0.25);
-
-    var size = 2;          // 2 components per iteration
-    var type = gl.FLOAT;   // the data is 32bit floats
-    var normalize = false; // don't normalize the data
-    var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
-    var offset = 0;        // start at the beginning of the buffer
-    gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
-
-    var primitiveType = gl.TRIANGLES;
-    var offset = 0;
-    var count = 6;
-    gl.drawArrays(primitiveType, offset, count);
-  }
-}
 
 
 function calculatePositions(notes, yDistancePerSecond) {
@@ -156,7 +69,7 @@ function checkForMissedNotes(notes, tolerances, elapsedTime) {
     { column: 0, ms: 14000 }
   ];
 
-  const canvas:any = document.querySelector("#gl-main");
+  const canvas = <HTMLCanvasElement>document.querySelector("#gl-main");
   const gl = canvas.getContext("webgl");
 
   if (!gl) {
@@ -179,25 +92,7 @@ function checkForMissedNotes(notes, tolerances, elapsedTime) {
   var vertexShaderSource = (<HTMLScriptElement>document.getElementById("vertex")).text;
   var fragmentShaderSource = (<HTMLScriptElement>document.getElementById("fragment")).text;
 
-  var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-  var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-
-  var program = createProgram(gl, vertexShader, fragmentShader);
-
-  gl.useProgram(program);
-
-  var colorUniformLocation = gl.getUniformLocation(program, "u_color");
-  var translationUniformLocation = gl.getUniformLocation(program, "u_translation");
-
-  var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-  var positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.enableVertexAttribArray(positionAttributeLocation);
-
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  var renderer = new Renderer(gl, yDistancePerSecond, targetY, vertexShaderSource, fragmentShaderSource);
 
   var score = 0;
   var combo = 0;
@@ -255,13 +150,7 @@ function checkForMissedNotes(notes, tolerances, elapsedTime) {
     }
 
     var notePositions = calculatePositions(notes, yDistancePerSecond);
-
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    drawTargets(gl, colorUniformLocation, translationUniformLocation, positionAttributeLocation, positionBuffer, targetY);
-    drawNotes(gl, colorUniformLocation, translationUniformLocation, positionAttributeLocation, positionBuffer, notePositions, yDistancePerSecond, elapsed);
-
+    renderer.render(notePositions, elapsed);
     requestAnimationFrame(tick);
   }
 
